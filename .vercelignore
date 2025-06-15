@@ -1,0 +1,15 @@
+.git
+.github
+.vscode
+android
+ios
+linux
+macos
+windows
+test
+.dart_tool
+.idea
+*.iml
+*.log
+*.pyc
+.DS_Store 
