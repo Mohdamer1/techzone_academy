@@ -12,4 +12,8 @@ flutter doctor
 flutter pub get
 
 # Build web release
-flutter build web --release 
+flutter build web --release
+
+# Copy build output to 'dist' directory for Vercel
+mkdir -p dist
+cp -r build/web/* dist 
