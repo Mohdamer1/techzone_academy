@@ -2,9 +2,9 @@
   "version": 2,
   "builds": [
     {
-      "src": "pubspec.yaml",
+      "src": "build.sh",
       "use": "@vercel/static-build",
-      "config": { "installCommand": "flutter pub get", "buildCommand": "flutter build web --release" }
+      "config": { "installCommand": "flutter pub get", "buildCommand": "./build.sh" }
     }
   ],
   "routes": [

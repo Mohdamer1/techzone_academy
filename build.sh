@@ -1,14 +1,15 @@
 #!/bin/bash
 
-# Install Flutter
-git clone https://github.com/flutter/flutter.git -b stable
-export PATH="$PATH:`pwd`/flutter/bin"
+# Exit on error
+set -e
+
+# Install Flutter (if not already cached)
+git clone https://github.com/flutter/flutter.git -b stable --depth 1
+export PATH="$PATH:$(pwd)/flutter/bin"
+flutter doctor
 
 # Install dependencies
 flutter pub get
 
-# Build web
-flutter build web --release
-
-# Create a _redirects file for SPA routing
-echo "/* /index.html 200" > build/web/_redirects 
+# Build web release
+flutter build web --release 
