@@ -1,0 +1,13 @@
+{
+  "name": "techzone-academy",
+  "version": "1.0.0",
+  "description": "TechZone Academy Flutter Web App",
+  "scripts": {
+    "build": "chmod +x build.sh && ./build.sh",
+    "install": "flutter pub get",
+    "start": "flutter run -d web-server --web-port 3000"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 

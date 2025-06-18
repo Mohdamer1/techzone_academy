@@ -2,11 +2,11 @@
   "version": 2,
   "builds": [
     {
-      "src": "build.sh",
+      "src": "package.json",
       "use": "@vercel/static-build",
-      "config": { 
-        "installCommand": "flutter pub get", 
-        "buildCommand": "./build.sh",
+      "config": {
+        "installCommand": "npm install",
+        "buildCommand": "npm run build",
         "outputDirectory": "dist"
       }
     }
