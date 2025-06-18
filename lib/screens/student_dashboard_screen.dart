@@ -9,14 +9,14 @@ import 'attendance_screen.dart';
 import 'support_screen.dart';
 import 'create_account_screen.dart';
 
-class TrainerDashboardScreen extends StatefulWidget {
-  const TrainerDashboardScreen({super.key});
+class StudentDashboardScreen extends StatefulWidget {
+  const StudentDashboardScreen({super.key});
 
   @override
-  State<TrainerDashboardScreen> createState() => _TrainerDashboardScreenState();
+  State<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
 }
 
-class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
+class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   final BatchService _batchService = BatchService();
   final AuthService _authService = AuthService();
   
@@ -92,13 +92,10 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0B80EE).withOpacity(0.1),
+                      color: const Color(0xFFF0F2F5),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
-                      Icons.school,
-                      color: Color(0xFF0B80EE),
-                    ),
+                    child: const Icon(Icons.person, color: Color(0xFF111418)),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -106,18 +103,18 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Trainer Dashboard',
+                          'Welcome back,',
                           style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF111418),
+                            fontSize: 14,
+                            color: Color(0xFF60758A),
                           ),
                         ),
                         Text(
                           _userData?['name'] ?? 'Loading...',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF111418),
                           ),
                         ),
                       ],
@@ -225,7 +222,6 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     final startDate = batch['startDate'] as Timestamp?;
     final endDate = batch['endDate'] as Timestamp?;
     final schedule = batch['schedule'] ?? 'Not specified';
-    final studentCount = batch['studentCount'] ?? 0;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -272,21 +268,6 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0B80EE).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '$studentCount students',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF0B80EE),
-                    ),
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -312,13 +293,13 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Management buttons
+            // Action buttons
             Row(
               children: [
                 Expanded(
                   child: _buildActionButton(
                     icon: Icons.book,
-                    label: 'Manage Topics',
+                    label: 'Topics',
                     onTap: () => _navigateToBatchContent(batch['id'], 'topics'),
                   ),
                 ),
@@ -326,28 +307,16 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                 Expanded(
                   child: _buildActionButton(
                     icon: Icons.folder,
-                    label: 'Manage Files',
+                    label: 'Files',
                     onTap: () => _navigateToBatchContent(batch['id'], 'files'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.calendar_today,
-                    label: 'Mark Attendance',
-                    onTap: () => _navigateToBatchContent(batch['id'], 'attendance'),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildActionButton(
-                    icon: Icons.people,
-                    label: 'View Students',
-                    onTap: () => _showBatchStudents(batch),
+                    icon: Icons.calendar_today,
+                    label: 'Attendance',
+                    onTap: () => _navigateToBatchContent(batch['id'], 'attendance'),
                   ),
                 ),
               ],
@@ -446,79 +415,6 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
           ),
         );
         break;
-    }
-  }
-
-  void _showBatchStudents(Map<String, dynamic> batch) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Students in ${batch['name']}'),
-        content: FutureBuilder<List<Map<String, dynamic>>>(
-          future: _getBatchStudents(batch['id']),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            
-            if (snapshot.hasError) {
-              return Text('Error loading students: ${snapshot.error}');
-            }
-            
-            final students = snapshot.data ?? [];
-            
-            if (students.isEmpty) {
-              return const Text('No students assigned to this batch yet.');
-            }
-            
-            return SizedBox(
-              width: double.maxFinite,
-              height: 300,
-              child: ListView.builder(
-                itemCount: students.length,
-                itemBuilder: (context, index) {
-                  final student = students[index];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      child: Text(
-                        student['name']?.substring(0, 1).toUpperCase() ?? '?',
-                      ),
-                    ),
-                    title: Text(student['name'] ?? 'Unknown'),
-                    subtitle: Text(student['email'] ?? ''),
-                  );
-                },
-              ),
-            );
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<List<Map<String, dynamic>>> _getBatchStudents(String batchId) async {
-    try {
-      final usersSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('batchIds', arrayContains: batchId)
-          .where('role', isEqualTo: 'student')
-          .get();
-
-      return usersSnapshot.docs
-          .map((doc) => {
-                'id': doc.id,
-                ...doc.data(),
-              })
-          .toList();
-    } catch (e) {
-      print('Error getting batch students: $e');
-      return [];
     }
   }
 

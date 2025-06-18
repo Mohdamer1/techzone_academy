@@ -68,17 +68,59 @@ class AuthService {
       );
       print('User created successfully: ${userCredential.user?.uid}');
 
-      // Create user document
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
-        'name': name,
-        'email': email,
-        'mobileNumber': mobileNumber,
-        'role': role,
-        'createdAt': FieldValue.serverTimestamp(),
-        'batchId': null,
-        'batchIds': [],
-      });
-      print('User document created successfully');
+      // Check for payments with this email and collect all batchRefIds
+      final paymentsSnapshot = await _firestore
+          .collection('payments')
+          .where('studentEmail', isEqualTo: email)
+          .get();
+      final batchRefIds = <String>{};
+      for (final doc in paymentsSnapshot.docs) {
+        final data = doc.data();
+        // Find the batch by course and get its batchRefId
+        if (data['course'] != null) {
+          final batchQuery = await _firestore
+              .collection('batches')
+              .where('course', isEqualTo: data['course'])
+              .get();
+          if (batchQuery.docs.isNotEmpty) {
+            final batchRefId = batchQuery.docs.first.data()['batchRefId'];
+            if (batchRefId != null) {
+              batchRefIds.add(batchRefId);
+            }
+          }
+        }
+      }
+
+      // Check if a minimal user record exists (autoCreated)
+      final existingUserQuery = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .where('autoCreated', isEqualTo: true)
+          .limit(1)
+          .get();
+      if (existingUserQuery.docs.isNotEmpty) {
+        // Update the minimal user record with full registration info
+        final docId = existingUserQuery.docs.first.id;
+        await _firestore.collection('users').doc(docId).update({
+          'name': name,
+          'mobileNumber': mobileNumber,
+          'role': role,
+          'autoCreated': false,
+          'batchIds': batchRefIds.toList(),
+        });
+      } else {
+        // Create user document
+        await _firestore.collection('users').doc(userCredential.user!.uid).set({
+          'name': name,
+          'email': email,
+          'mobileNumber': mobileNumber,
+          'role': role,
+          'createdAt': FieldValue.serverTimestamp(),
+          'batchId': null,
+          'batchIds': batchRefIds.toList(),
+        });
+      }
+      print('User document created/updated successfully');
 
       return userCredential;
     } catch (e) {
